@@ -12,7 +12,7 @@ This animation illustrates the Furuta Pendulum problem.
 # Dynamics and State Space Representation found from paper:
 # "Nonlinear stabilization control of Furuta pendulum only
 # using angle position measurements"
-# Authors: Lin  Zhao, Shuli Gong, Ancai Zhang, Lanmei Cong
+# Authors: Lin Zhao, Shuli Gong, Ancai Zhang, Lanmei Cong
 
 
 from numpy import sin, cos
@@ -20,6 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.integrate as integrate
 import matplotlib.animation as animation
+import cv2
 
 G = 9.8  # acceleration due to gravity, in m/s^2
 L1 = 1.0  # length of pendulum 1 in m
@@ -40,6 +41,10 @@ A2 = M1 * R1 * L2
 A3 = J2 + M2 * R2 * R2 + M1 * L2 * L2
 A4 = M1 * G * R1
 
+# Set up formatting for the movie files
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+
 
 def derivs(state, t):
 
@@ -52,19 +57,21 @@ def derivs(state, t):
     dydx[1] = A4 * sin(state[0]) + phi
 
     dydx[2] = state[3]
-    dydx[3] = 0.1  # Apply a constant torque top motor of 0.1
+    dydx[3] = 0  # Apply a constant torque top motor of 0.1
 
     return dydx
 
-# create a time array from 0..100 sampled at 0.05 second steps
-dt = 0.05
-t = np.arange(0.0, 100, dt)
+# create a time array from 0..100 sampled at 0.01 second steps
+dt = 0.03125
+t = np.arange(0.0, 15, dt)
+myfps = int(1/dt)
+myinterval = int(dt*1000)
 
 # Initial conditions
-q1 = 180.0  # angle of pendulum
-q2 = 45.0  # angle of Furuta arm/motor
-q1d = 10.0  # initial angular speed of q1
-q2d = 1.0  # initial angular speed of q2
+q1 = 135.0  # angle of pendulum
+q2 = 0.0  # angle of Furuta arm/motor
+q1d = 0.0  # initial angular speed of q1
+q2d = 0.0  # initial angular speed of q2
 
 
 # X1, X2, X3, X4 are the state space representation
@@ -79,8 +86,8 @@ state = np.radians([X1, X2, X3, X4])
 # integrate your ODE using scipy.integrate.
 y = integrate.odeint(derivs, state, t)
 
-x1 = L1*sin(y[:, 0])
-y1 = -L1*cos(y[:, 0])
+x1 = -L1*sin(y[:, 0])
+y1 = L1*cos(y[:, 0])
 
 x2 = L2*sin(y[:, 2])
 y2 = -L2*cos(y[:, 2])
@@ -114,7 +121,7 @@ def animate(i):
     return line, line2, time_text
 
 ani = animation.FuncAnimation(fig, animate, np.arange(1, len(y)),
-                              interval=25, blit=True, init_func=init)
-
-# ani.save('double_pendulum.mp4', fps=15)
+                              interval=32, blit=True, init_func=init)
+# ani.save('f3.mp4', fps=myfps, writer='ffmpeg')
 plt.show()
+
