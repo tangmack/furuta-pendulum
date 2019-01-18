@@ -34,14 +34,14 @@ M1 = 1.0  # mass of pendulum 1 in kg
 L1 = 1.0  # length of pendulum 1 in m
 l1 = 0.5  # radius of center of mass
 J1 = 1.0
-B1 = 0.0
+B1 = 0.1
 
 # Pendulum
 M2 = 1.0  # mass of pendulum 2 in kg
 L2 = 1.5  # length of pendulum 2 in m
 l2 = 0.75  # radius
 J2 = 1.0
-B2 = 0.0
+B2 = 0.2
 # FRIC1 = .3  # friction coefficient (* by velocity)
 # FRIC2 = .3  # friction coefficient (* by velocity)
 
@@ -59,10 +59,15 @@ def derivs(state, t):
 
     dydx = np.zeros_like(state)
 
-    tau1 = 5.0  # motor torque
+    # if (t<20.0):
+    tau1 = -state[3] * 1.25 # motor torque
+    # else:
+        # tau1 = 0.0
     tau2 = 0.0  # disturbance torque (system not actuated here)!
 
     mytwos = 2 * state[2]
+
+    # print state[0]
 
 
     dydx[0] = state[1]
@@ -90,14 +95,11 @@ def derivs(state, t):
             + A2 * A2 * state[1] * state[1] * sin(state[2]) * sin(state[2]) * sin(mytwos) ) \
             / ( 2 * (A0 * A2 - L1 * L1 * l2 * l2 * M2 * M2 * cos(state[2]) * cos(state[2]) + A2 * A2 * sin(state[2]) * sin(state[2]) ) )
 
-    print t
     return dydx
 
 # create a time array from 0..100 sampled at 0.01 second steps
 dt = 0.03125
-t = np.arange(0.0, 7.0, dt)
-print "t is"
-print t
+t = np.arange(0.0, 40.0, dt)
 myfps = int(1/dt)
 myinterval = int(dt*1000)
 
@@ -105,7 +107,7 @@ myinterval = int(dt*1000)
 q1 = 180.0  # angle of motor
 q1d = 0.0  # initial angular speed of motor
 
-q2 = 0.0  # angle of pendulum
+q2 = 10.0  # angle of pendulum
 q2d = 0.0  # initial angular speed of pendulum
 
 
@@ -122,7 +124,6 @@ state = np.radians([q1, q1d, q2, q2d])
 y = integrate.odeint(derivs, state, t)
 
 x1 = -L1*sin(y[:, 0])
-print y[:,0]
 y1 = L1*cos(y[:, 0])
 
 x2 = L2*sin(y[:, 2])
@@ -164,8 +165,8 @@ ani = animation.FuncAnimation(fig, animate, np.arange(1, len(y)),
 # Writer = animation.writers['ffmpeg']
 # writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
 
-ani.save('f3.mp4', fps=myfps, dpi=60, writer='ffmpeg')
-# plt.show()
+# ani.save('f3.mp4', fps=myfps, dpi=60, writer='ffmpeg')
+plt.show()
 
 t1 = time.time()
 print(t1-t0)
