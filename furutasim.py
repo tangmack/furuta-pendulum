@@ -22,45 +22,73 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.integrate as integrate
 import matplotlib.animation as animation
-import cv2
+# import cv2
 
-import math
+# import math
 
 
 G = 9.8  # acceleration due to gravity, in m/s^2
+
+# Motor
+M1 = 1.0  # mass of pendulum 1 in kg
 L1 = 1.0  # length of pendulum 1 in m
-L2 = 1.5  # length of pendulum 2 in m
+l1 = 0.5  # radius of center of mass
+J1 = 1.0
+B1 = 0.0
 
-M1 = 2.5  # mass of pendulum 1 in kg
-R1 = 0.8
-J1 = 3.0
-
+# Pendulum
 M2 = 1.0  # mass of pendulum 2 in kg
-R2 = 0.75
-J2 = 2.0
+L2 = 1.5  # length of pendulum 2 in m
+l2 = 0.75  # radius
+J2 = 1.0
+B2 = 0.0
 # FRIC1 = .3  # friction coefficient (* by velocity)
 # FRIC2 = .3  # friction coefficient (* by velocity)
 
-A1 = J1 + M1 * R1 * R1
-A2 = M1 * R1 * L2
-A3 = J2 + M2 * R2 * R2 + M1 * L2 * L2
-A4 = M1 * G * R1
+# A1 = J1 + M1 * R1 * R1
+# A2 = M1 * R1 * L2
+# A3 = J2 + M2 * R2 * R2 + M1 * L2 * L2
+# A4 = M1 * G * R1
+
+A0 = J1 + M1 * l1 * l1 + M2 * L1 * L1
+A2 = J2 + M2 * l2 * l2
+
 
 
 def derivs(state, t):
 
     dydx = np.zeros_like(state)
 
-    phi = A1 * state[3] * state[3] * sin(2*state[1]) \
-        + A2 * state[3] * (state[1] + A2 * state[3] * cos(state[0]))*sin(state[0])/A1
+    tau1 = 5.0  # motor torque
+    tau2 = 0.0  # disturbance torque (system not actuated here)!
 
-    
+    mytwos = 2 * state[2]
 
-    dydx[0] = state[1] + A2 * state[3] * cos(state[0])
-    dydx[1] = A4 * sin(state[0]) + phi
+
+    dydx[0] = state[1]
+    dydx[1] = (2 * A2 * tau1 - 2 * A2 * B1 * state[1] - 2 * L1 * l2 * M2 * tau2 * cos(state[2]) \
+            + 2 * B2 * L1 * l2 * M2 * state[3] * cos(state[2]) \
+            + 2 * A2 * L1 * l2 * M2 * state[3] * state[3] * sin(state[2]) \
+            + 2 * G * L1 * l2 * l2 * M2 * M2 * cos(state[2]) * sin(state[2]) \
+            - 2 * A2 * A2 * state[1] * state[3] * sin( mytwos ) \
+            - A2 * L1 * l2 * M2 * state[1] * state[1] * cos(state[2]) * sin(mytwos)) \
+            / ( 2 * ( A0 * A2 - L1 * L1 * l2 * l2 * M2 * M2 * cos(state[2]) * cos(state[2]) + A2 * A2 * sin(state[2]) * sin(state[2]) ) )
 
     dydx[2] = state[3]
-    dydx[3] = 0  # Apply a constant torque top motor of 0.1
+    dydx[3] = (2 * A0 * tau2 \
+            - 2 * A0 * B2 * state[2] \
+            - 2 * L1 * l2 * M2 * tau1 * cos(state[2]) \
+            + 2 * B1 * L1 * l2 * M2 * state[1] * cos(state[2]) \
+            - 2 * A0 * G * l2 * M2 * sin(state[2]) \
+            - 2 * L1 * L1 * l2 * l2 * M2 * M2 * state[3] * state[3] * cos(state[2]) * sin(state[2]) \
+            + 2 * A2 * tau2 * sin(state[2]) * sin(state[2]) \
+            - 2 * A2 * B2 * state[3] * sin(state[2]) * sin(state[2])  \
+            - 2 * A2 * B2 * state[3] * sin(state[2]) * sin(state[2]) \
+            - 2 * A2 * G * l2 * M2 * sin(state[2]) * sin(state[2]) * sin(state[2])
+            + A0 * A2 * state[1] * state[1] * sin(mytwos) \
+            + 2 * A2 * L1 * l2 * M2 * state[1] * state[3] * cos(state[2]) * sin(mytwos) \
+            + A2 * A2 * state[1] * state[1] * sin(state[2]) * sin(state[2]) * sin(mytwos) ) \
+            / ( 2 * (A0 * A2 - L1 * L1 * l2 * l2 * M2 * M2 * cos(state[2]) * cos(state[2]) + A2 * A2 * sin(state[2]) * sin(state[2]) ) )
 
     print t
     return dydx
@@ -74,20 +102,21 @@ myfps = int(1/dt)
 myinterval = int(dt*1000)
 
 # Initial conditions
-q1 = 135.0  # angle of pendulum
-q2 = 0.0  # angle of Furuta arm/motor
-q1d = 0.0  # initial angular speed of q1
-q2d = 1.0  # initial angular speed of q2
+q1 = 180.0  # angle of motor
+q1d = 0.0  # initial angular speed of motor
+
+q2 = 0.0  # angle of pendulum
+q2d = 0.0  # initial angular speed of pendulum
 
 
 # X1, X2, X3, X4 are the state space representation
-X1 = q1
-X2 = A1 * q1d - A2 * cos(math.radians(q1) * math.radians(q2d))
-X3 = q2
-X4 = q2d
+# X1 = q1
+# X2 = A1 * q1d - A2 * cos(math.radians(q1) * math.radians(q2d))
+# X3 = q2
+# X4 = q2d
 
 # initial state
-state = np.radians([X1, X2, X3, X4])
+state = np.radians([q1, q1d, q2, q2d])
 
 # integrate your ODE using scipy.integrate.
 y = integrate.odeint(derivs, state, t)
