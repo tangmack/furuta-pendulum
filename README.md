@@ -10,5 +10,7 @@ by Lin  Zhao, Shuli Gong, Ancai Zhang, Lanmei Cong
 The code started off from the example code found here:
 https://matplotlib.org/examples/animation/double_pendulum_animated.html
 
-Video of simulation:
-https://drive.google.com/file/d/1NblXR0N66399cyZi6Eke50Vi7pLmcODI/view
+Video of simulation, using energy based controller to swing up (cannot balance yet):
+https://drive.google.com/file/d/1S6-EbsayWW5-o18eGSLLA2UU1cRS-E2y/view?usp=sharing
+
+In the video, torque is applied to the motor (blue) is equal to the angular velocity of the pendulum arm (orange).
