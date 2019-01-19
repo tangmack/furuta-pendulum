@@ -30,18 +30,18 @@ import matplotlib.animation as animation
 G = 9.8  # acceleration due to gravity, in m/s^2
 
 # Motor
-M1 = 1.0  # mass of pendulum 1 in kg
-L1 = 1.0  # length of pendulum 1 in m
-l1 = 0.5  # radius of center of mass
-J1 = 1.0
-B1 = 0.1
+M1 = .0695  # mass of pendulum 1 in kg
+L1 = .035  # length of pendulum 1 in m
+l1 = 0.025  # radius of center of mass
+J1 = 0.00015625
+B1 = 0.00001
 
 # Pendulum
-M2 = 1.0  # mass of pendulum 2 in kg
-L2 = 1.5  # length of pendulum 2 in m
-l2 = 0.75  # radius
-J2 = 1.0
-B2 = 0.2
+M2 = .025  # mass of pendulum 2 in kg
+L2 = 0.06  # length of pendulum 2 in m
+l2 = 0.03  # radius
+J2 = 0.00003
+B2 = 0.0001
 # FRIC1 = .3  # friction coefficient (* by velocity)
 # FRIC2 = .3  # friction coefficient (* by velocity)
 
@@ -53,21 +53,33 @@ B2 = 0.2
 A0 = J1 + M1 * l1 * l1 + M2 * L1 * L1
 A2 = J2 + M2 * l2 * l2
 
+peak_torque_output = 0.0  # track maximum torque output from motor
+time_to_45degree_error = np.inf  # track time to get nearly upright
 
 
 def derivs(state, t):
 
     dydx = np.zeros_like(state)
 
+    global peak_torque_output
+    global time_to_45degree_error
+
     # if (t<20.0):
-    tau1 = -state[3] * 1.25 # motor torque
+    tau1 = -state[3] * 0.001 # motor torque
+
+    if t < time_to_45degree_error:
+        if (tau1 > peak_torque_output):
+            peak_torque_output = tau1
+
+        if (state[2] > 2.35619) or (state[2] < -2.35619):
+            time_to_45degree_error = t
+
+    # tau1 = 0.0
     # else:
         # tau1 = 0.0
     tau2 = 0.0  # disturbance torque (system not actuated here)!
 
     mytwos = 2 * state[2]
-
-    # print state[0]
 
 
     dydx[0] = state[1]
@@ -99,7 +111,7 @@ def derivs(state, t):
 
 # create a time array from 0..100 sampled at 0.01 second steps
 dt = 0.03125
-t = np.arange(0.0, 40.0, dt)
+t = np.arange(0.0, 10.0, dt)
 myfps = int(1/dt)
 myinterval = int(dt*1000)
 
@@ -130,7 +142,7 @@ x2 = L2*sin(y[:, 2])
 y2 = -L2*cos(y[:, 2])
 
 fig = plt.figure()
-ax = fig.add_subplot(111, autoscale_on=False, xlim=(-2, 2), ylim=(-2, 2))
+ax = fig.add_subplot(111, autoscale_on=False, xlim=(-0.1, 0.1), ylim=(-0.1, 0.1))
 fig.gca().set_aspect('equal',adjustable='box')
 ax.grid()
 
@@ -167,6 +179,9 @@ ani = animation.FuncAnimation(fig, animate, np.arange(1, len(y)),
 
 # ani.save('f3.mp4', fps=myfps, dpi=60, writer='ffmpeg')
 plt.show()
+
+print "peak torque used was ", peak_torque_output, " Nm."
+print "time to reach less than 45 degree error: ", time_to_45degree_error
 
 t1 = time.time()
 print(t1-t0)
