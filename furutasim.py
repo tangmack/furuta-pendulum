@@ -34,14 +34,14 @@ M1 = .0695  # mass of pendulum 1 in kg
 L1 = .035  # length of pendulum 1 in m
 l1 = 0.025  # radius of center of mass
 J1 = 0.00015625
-B1 = 0.00001
+B1 = 0.0
 
 # Pendulum
 M2 = .025  # mass of pendulum 2 in kg
 L2 = 0.06  # length of pendulum 2 in m
 l2 = 0.03  # radius
 J2 = 0.00003
-B2 = 0.0001
+B2 = 0.0
 # FRIC1 = .3  # friction coefficient (* by velocity)
 # FRIC2 = .3  # friction coefficient (* by velocity)
 
@@ -65,19 +65,30 @@ def derivs(state, t):
     global time_to_45degree_error
 
     # if (t<20.0):
-    tau1 = -state[3] * 0.001 # motor torque
+    # if (state[2] > 2.96706) or (state[2] < -2.96706):
+    # if ((np.pi - abs(state[2])) * np.sign(state[2]) * .05) > 0:
+        # tau1 = .05
+    # elif ((np.pi - abs(state[2])) * np.sign(state[2]) * .05) < 0:
+        # tau1 = -.05
+    tau1 = (np.pi - abs(state[2])) * np.sign(state[2]) * .18 - 0.004 * state[3]
+    # tau1 = (np.pi - abs(state[2])) * np.sign(state[2]) * .18
+    # tau1 = 0.0
+    # tau1 = 0.0
+    # else:
+    #     tau1 = -state[3] * 0.001 # motor torque
 
-    if t < time_to_45degree_error:
-        if (tau1 > peak_torque_output):
+    # if t < time_to_45degree_error:
+    if (abs(tau1) > abs(peak_torque_output)):
             peak_torque_output = tau1
 
-        if (state[2] > 2.35619) or (state[2] < -2.35619):
-            time_to_45degree_error = t
+    if (state[2] > 2.35619) or (state[2] < -2.35619):
+        time_to_45degree_error = t
 
     # tau1 = 0.0
     # else:
         # tau1 = 0.0
-    tau2 = 0.0  # disturbance torque (system not actuated here)!
+    # tau2 = 0.0  # disturbance torque (system not actuated here)!
+    tau2 = -.00001 * state[3] # apply friction
 
     mytwos = 2 * state[2]
 
@@ -110,8 +121,9 @@ def derivs(state, t):
     return dydx
 
 # create a time array from 0..100 sampled at 0.01 second steps
-dt = 0.03125
-t = np.arange(0.0, 10.0, dt)
+# dt = 0.03125
+dt = 0.01428571428
+t = np.arange(0.0, 15.0, dt)
 myfps = int(1/dt)
 myinterval = int(dt*1000)
 
@@ -119,7 +131,7 @@ myinterval = int(dt*1000)
 q1 = 180.0  # angle of motor
 q1d = 0.0  # initial angular speed of motor
 
-q2 = 10.0  # angle of pendulum
+q2 = 177.0  # angle of pendulum
 q2d = 0.0  # initial angular speed of pendulum
 
 
@@ -177,11 +189,11 @@ ani = animation.FuncAnimation(fig, animate, np.arange(1, len(y)),
 # Writer = animation.writers['ffmpeg']
 # writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
 
-# ani.save('f3.mp4', fps=myfps, dpi=60, writer='ffmpeg')
-plt.show()
+ani.save('f3.mp4', fps=myfps, dpi=60, writer='ffmpeg')
+# plt.show()
 
-print "peak torque used was ", peak_torque_output, " Nm."
-print "time to reach less than 45 degree error: ", time_to_45degree_error
+print("peak torque used was ", peak_torque_output, " Nm.")
+print("time to reach less than 45 degree error: ", time_to_45degree_error)
 
 t1 = time.time()
 print(t1-t0)
