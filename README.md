@@ -15,4 +15,4 @@ Video demonstrating [friction in pendulum bearing](https://drive.google.com/file
 In the video, torque applied to the motor (blue) is equal to the angular velocity of the pendulum arm (orange).
 
 
-[Hardware Video (slow motion, Pendulum tries to balance)](https://drive.google.com/file/d/1yqHJXSFU4I7Ka7pVbQAQ5QwsM_YqX-up/view?usp=sharing)
+[Hardware Video (slow motion, Pendulum tries to balance)](https://drive.google.com/file/d/1LtrjX4RrMdlgkyP04adpqTIfSkuxWwwN/view?usp=sharing)
