@@ -70,9 +70,9 @@ def derivs(state, t):
         # tau1 = .05
     # elif ((np.pi - abs(state[2])) * np.sign(state[2]) * .05) < 0:
         # tau1 = -.05
-    tau1 = (np.pi - abs(state[2])) * np.sign(state[2]) * .18 - 0.004 * state[3]
+    # tau1 = (np.pi - abs(state[2])) * np.sign(state[2]) * .18 - 0.004 * state[3]
     # tau1 = (np.pi - abs(state[2])) * np.sign(state[2]) * .18
-    # tau1 = 0.0
+    tau1 = 0.0
     # tau1 = 0.0
     # else:
     #     tau1 = -state[3] * 0.001 # motor torque
