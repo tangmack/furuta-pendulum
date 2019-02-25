@@ -7,10 +7,22 @@ from scipy.signal import sepfir2d
 # mymatrix = np.loadtxt('f255',delimiter=',',skiprows=2)
 # mymatrix = np.loadtxt('a412',delimiter=',',skiprows=2)
 # mymatrix = np.loadtxt('pgain00285dc015left',delimiter=',',skiprows=2)
-mymatrix = np.loadtxt('vid',delimiter=',',skiprows=2)
+
+myfilename = 'puttytesting2'
+
+lookup = ','
+# lookup2 = 'STARTING'
+
+with open(myfilename) as myFile:
+    for num, line in enumerate(myFile, 1):
+        if lookup in line: print('found comma at line:', num); break
+        # if lookup2 in line: print('found at line:', num); break
+
+
+mymatrix = np.loadtxt(myfilename,delimiter=',',skiprows=num-1)
 print(mymatrix)
 
-mymatrix[:,0] = (mymatrix[:,0] - 5361.)/200
+mymatrix[:,0] = (mymatrix[:,0] - 5383.)/200
 # mymatrix[:,0] = sepfir2d(mymatrix[:,0], 2, 0)
 
 a = np.fft.fft(mymatrix[:,0])
@@ -33,6 +45,11 @@ a = np.fft.fft(mymatrix[:,0])
 # print(newmatrix)
 plt.axhline(y=0, color='r', linestyle='-')
 # plt.legend("ah")
-plt.plot(mymatrix)
+plt.plot(mymatrix[:,0], '.',label='position')
+plt.plot(mymatrix[:,1], label='current')
+plt.plot(mymatrix[:,2], label='Proportional')
+plt.plot(mymatrix[:,3], label='Derivative')
+plt.legend(loc='upper left')
+plt.savefig(myfilename + '.png')
+# plt.savefig(myfilename + '.svg')
 plt.show()
-plt.savefig('vid.png')
