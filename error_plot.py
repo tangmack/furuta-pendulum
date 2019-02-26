@@ -8,7 +8,7 @@ from scipy.signal import sepfir2d
 # mymatrix = np.loadtxt('a412',delimiter=',',skiprows=2)
 # mymatrix = np.loadtxt('pgain00285dc015left',delimiter=',',skiprows=2)
 
-myfilename = 'puttytesting2'
+myfilename = 'g0632'
 
 lookup = ','
 # lookup2 = 'STARTING'
@@ -22,7 +22,7 @@ with open(myfilename) as myFile:
 mymatrix = np.loadtxt(myfilename,delimiter=',',skiprows=num-1)
 print(mymatrix)
 
-mymatrix[:,0] = (mymatrix[:,0] - 5383.)/200
+mymatrix[:,0] = (mymatrix[:,0] - 5440.)/200
 # mymatrix[:,0] = sepfir2d(mymatrix[:,0], 2, 0)
 
 a = np.fft.fft(mymatrix[:,0])
